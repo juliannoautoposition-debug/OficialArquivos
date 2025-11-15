@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <title>APP | Estoque | Histórico</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root{
+      --verde:#3f1e00;
+      --fundo:#f8f9fa;
+    }
+    body{
+      background:var(--fundo);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+    .navbar{
+      background:var(--verde)!important;
+      position: relative;
+    }
+    .navbar .nav-link,.navbar-brand{
+      color:#fff!important;
+    }
+    .img-side{
+      width:110px;
+      height:90px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:#fff;
+      border-radius:8px;
+      overflow:hidden;
+      border:1px solid rgba(0,0,0,0.04);
+    }
+    .img-side img{
+      max-width:100%;
+      max-height:100%;
+      object-fit:contain;
+    }
+    .card-product{
+      border-radius:10px;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .card-product:hover{
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15)!important;
+    }
+    .small-muted{
+      font-size:.9rem;
+      color:#6c757d;
+    }
+    .quantidade-controle{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      flex-wrap:wrap;
+      justify-content:center;
+    }
+    .quantidade-controle .btn-menos,.quantidade-controle .btn-mais{
+      width:34px;
+      height:34px;
+      padding:0;
+      border-radius:6px;
+      color:#fff;
+      border:none;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      font-size:1.2rem;
+      font-weight:bold;
+    }
+    .btn-menos{
+      background:#dc3545;
+    }
+    .btn-menos:hover{
+      background:#c82333;
+    }
+    .btn-mais{
+      background:#28a745;
+    }
+    .btn-mais:hover{
+      background:#218838;
+    }
+    .quantidade-controle input{
+      width:60px;
+      height:34px;
+      text-align:center;
+      border-radius:6px;
+      border:1px solid #ddd;
+    }
+    .btn-add{
+      background:#ffc107;
+      color:#000;
+      border-radius:8px;
+      font-weight:600;
+      height:40px;
+      min-width:120px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      border:none;
+    }
+    .btn-add:hover{
+      background:#e0a800;
+    }
+    .card-estoque{
+      border-radius:10px;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .card-estoque:hover{
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15)!important;
+    }
+    .img-estoque{
+      width:80px;
+      height:70px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:#fff;
+      border-radius:8px;
+      overflow:hidden;
+      border:1px solid rgba(0,0,0,0.08);
+      flex-shrink:0;
+    }
+    .img-estoque img{
+      max-width:100%;
+      max-height:100%;
+      object-fit:contain;
+    }
+    .estoque-info{
+      flex:1;
+      min-width:0;
+    }
+    .estoque-info h6{
+      margin:0 0 8px 0;
+      font-size:1rem;
+      font-weight:600;
+      color:#212529;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .estoque-preco{
+      font-size:0.95rem;
+      color:#6c757d;
+      margin-bottom:4px;
+    }
+    .estoque-preco b{
+      color:#198754;
+      font-size:1.05rem;
+    }
+    .estoque-qtd{
+      font-size:0.9rem;
+      color:#6c757d;
+    }
+    .estoque-acoes{
+      display:flex;
+      gap:6px;
+      flex-shrink:0;
+    }
+    .btn-icon{
+      width:36px;
+      height:36px;
+      border-radius:6px;
+      border:none;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      transition:all 0.2s;
+    }
+    .btn-edit{
+      background:#0d6efd;
+      color:#fff;
+    }
+    .btn-edit:hover{
+      background:#0b5ed7;
+    }
+    .btn-delete{
+      background:#dc3545;
+      color:#fff;
+    }
+    .btn-delete:hover{
+      background:#c82333;
+    }
+    .modal-sucesso{
+      display:none;
+      position:fixed;
+      top:0;
+      left:0;
+      width:100%;
+      height:100%;
+      background:rgba(0,0,0,0.5);
+      z-index:9999;
+      align-items:center;
+      justify-content:center;
+    }
+    .modal-sucesso.show{
+      display:flex;
+      animation: fadeIn 0.3s;
+    }
+    .modal-sucesso-content{
+      background:#fff;
+      border-radius:20px;
+      padding:40px;
+      text-align:center;
+      max-width:400px;
+      margin:20px;
+      animation: slideUp 0.4s;
+      box-shadow:0 10px 40px rgba(0,0,0,0.2);
+    }
+    .check-animation{
+      width:80px;
+      height:80px;
+      border-radius:50%;
+      background:#198754;
+      margin:0 auto 20px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      animation: scaleIn 0.5s;
+    }
+    .check-animation i{
+      color:#fff;
+      font-size:40px;
+    }
+    @keyframes fadeIn{
+      from{opacity:0;}
+      to{opacity:1;}
+    }
+    @keyframes slideUp{
+      from{transform:translateY(50px);opacity:0;}
+      to{transform:translateY(0);opacity:1;}
+    }
+    @keyframes scaleIn{
+      0%{transform:scale(0);}
+      50%{transform:scale(1.1);}
+      100%{transform:scale(1);}
+    }
+    .whatsapp-config{
+      margin-top:20px;
+      padding:15px;
+      background:#f0f0f0;
+      border-radius:8px;
+    }
+    @media(max-width:767px){
+      .img-side{width:70px;height:60px;}
+      .quantidade-controle input{width:50px;}
+      .btn-add{width:100%;margin-top:8px;}
+      .img-estoque{width:60px;height:55px;}
+      .card-product .col-auto{width:100%;}
+      .quantidade-controle{justify-content:flex-start;}
+      .modal-sucesso-content{padding:30px 20px;}
+      .check-animation{width:60px;height:60px;}
+      .check-animation i{font-size:30px;}
+      .navbar-nav{flex-direction:row;gap:5px;}
+      .navbar-nav .nav-link{font-size:0.85rem;padding:8px!important;}
+      .estoque-acoes{margin-top:8px;}
+      h4{font-size:1.3rem;}
+      .container{padding-left:10px;padding-right:10px;}
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg mb-4">
+    <div class="container-fluid">
+      <a class="navbar-brand fw-bold"><i class="bi bi-shop"></i> App de Vendas</a>
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item"><a class="nav-link" href="#" id="abaVendas"><i class="bi bi-cart2 me-1"></i> Vendas</a></li>
+        <li class="nav-item"><a class="nav-link" href="#" id="abaEstoque"><i class="bi bi-box-seam me-1"></i> Estoque</a></li>
+        <li class="nav-item"><a class="nav-link" href="#" id="abaHistorico"><i class="bi bi-clock-history me-1"></i> Histórico</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="container mb-5">
+    <div id="telaVendas">
+      <div class="row">
+        <div class="col-md-8">
+          <h4 class="text-success mb-3"><i class="bi bi-bag"></i> Produtos</h4>
+          <div id="lista-produtos" class="row g-3"></div>
+        </div>
+        <div class="col-md-4">
+          <h4 class="text-success mb-3"><i class="bi bi-basket3"></i> Carrinho</h4>
+          <ul id="lista-carrinho" class="list-group mb-3"></ul>
+          <h5 class="text-end fw-bold text-success">Total: R$ <span id="totalVenda">0.00</span></h5>
+          <button id="btnFinalizar" class="btn btn-success w-100 mt-2"><i class="bi bi-check2-circle"></i> Finalizar Venda</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="telaEstoque" style="display:none;">
+      <div class="card shadow-sm mb-4">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center flex-wrap">
+            <h4 class="mb-0 text-success"><i class="bi bi-box-seam"></i> Gestão de Estoque</h4>
+            <button id="btnSairEstoque" class="btn btn-outline-secondary d-none mt-2 mt-md-0"><i class="bi bi-box-arrow-right"></i> Sair</button>
+          </div>
+          <div id="painelEstoqueArea" style="display:none;" class="mt-3">
+            <div class="whatsapp-config">
+              <label class="form-label"><i class="bi bi-whatsapp text-success"></i> WhatsApp do Gestor (com DDD)</label>
+              <input id="whatsappGestor" class="form-control" type="tel" placeholder="Ex: 11987654321" value="">
+              <small class="text-muted">As vendas serão enviadas automaticamente para este número</small>
+            </div>
+            <hr class="my-3">
+            <form id="formNovoProduto" class="row g-3 align-items-end">
+              <div class="col-md-4 col-12">
+                <label class="form-label small">Nome do Produto</label>
+                <input id="estoqueNome" class="form-control" placeholder="Ex: Camiseta" required>
+              </div>
+              <div class="col-md-2 col-6">
+                <label class="form-label small">Quantidade</label>
+                <input id="estoqueQuantidade" class="form-control" type="number" placeholder="Qtd" min="0" required>
+              </div>
+              <div class="col-md-2 col-6">
+                <label class="form-label small">Preço (R$)</label>
+                <input id="estoquePreco" class="form-control" type="number" placeholder="0.00" step="0.01" min="0" required>
+              </div>
+              <div class="col-md-3 col-12">
+                <label class="form-label small">Imagem</label>
+                <input id="estoqueImagem" class="form-control" type="file" accept="image/*">
+              </div>
+              <div class="col-md-1 col-12">
+                <button class="btn btn-success w-100" type="submit"><i class="bi bi-plus-lg"></i></button>
+              </div>
+            </form>
+            <hr class="my-3">
+            <h6 class="small-muted mb-3"><i class="bi bi-boxes"></i> Produtos no estoque</h6>
+            <div id="listaEstoque" class="row g-3"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="telaHistorico" style="display:none;">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h4 class="text-success mb-3"><i class="bi bi-clock-history"></i> Histórico de Vendas</h4>
+          <div id="areaHistorico"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="modalSenha" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h6 class="modal-title"><i class="bi bi-lock-fill"></i> Acesso Estoque</h6>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <input id="inputSenha" class="form-control" type="password" placeholder="Senha do gestor">
+          <div id="senhaErro" class="text-danger mt-2" style="display:none;">Senha incorreta.</div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button id="btnConfirmarSenha" class="btn btn-success">Entrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="modalEditarProduto" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h6 class="modal-title"><i class="bi bi-pencil-fill"></i> Editar Produto</h6>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="editarProdutoIdx">
+          <div class="mb-3">
+            <label class="form-label">Nome</label>
+            <input id="editarNome" class="form-control" type="text">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Quantidade</label>
+            <input id="editarQuantidade" class="form-control" type="number" min="0">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Preço (R$)</label>
+            <input id="editarPreco" class="form-control" type="number" step="0.01" min="0">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button id="btnSalvarEdicao" class="btn btn-success">Salvar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="modalEditarCarrinho" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h6 class="modal-title"><i class="bi bi-pencil-fill"></i> Editar Item</h6>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="editarCarrinhoIdx">
+          <div class="mb-3">
+            <label class="form-label fw-bold" id="editarCarrinhoNome"></label>
+            <small class="text-muted d-block">R$ <span id="editarCarrinhoPreco">0.00</span></small>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Quantidade</label>
+            <input id="editarCarrinhoQuantidade" class="form-control" type="number" min="1">
+            <small class="text-muted" id="avisoEstoque"></small>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button id="btnSalvarCarrinho" class="btn btn-success">Salvar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-sucesso" id="modalSucesso">
+    <div class="modal-sucesso-content">
+      <div class="check-animation">
+        <i class="bi bi-check-lg"></i>
+      </div>
+      <h4 id="tituloSucesso">Sucesso!</h4>
+      <p id="mensagemSucesso"></p>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const SENHA_GESTOR = 'sucesso2026';
+    let produtos = JSON.parse(localStorage.getItem('produtos')) || [
+      { nome: 'Camiseta', quantidade: 10, preco: 49.90, imagemURL: '' },
+      { nome: 'Boné', quantidade: 5, preco: 29.90, imagemURL: '' },
+      { nome: 'Chinelo', quantidade: 8, preco: 34.50, imagemURL: '' }
+    ];
+    let carrinho = JSON.parse(localStorage.getItem('carrinho')) || [];
+    let historico = JSON.parse(localStorage.getItem('historicoVendas')) || [];
+    let whatsappGestor = localStorage.getItem('whatsappGestor') || '';
+    let estoqueLogado = false;
+
+    function salvarTudo(){
+      localStorage.setItem('produtos',JSON.stringify(produtos));
+      localStorage.setItem('carrinho',JSON.stringify(carrinho));
+      localStorage.setItem('historicoVendas',JSON.stringify(historico));
+      localStorage.setItem('whatsappGestor',whatsappGestor);
+    }
+
+    function mostrarModalSucesso(titulo, mensagem){
+      document.getElementById('tituloSucesso').textContent = titulo;
+      document.getElementById('mensagemSucesso').textContent = mensagem;
+      document.getElementById('modalSucesso').classList.add('show');
+      setTimeout(()=>{
+        document.getElementById('modalSucesso').classList.remove('show');
+      }, 2500);
+    }
+
+    function enviarWhatsApp(venda){
+      let raw = (whatsappGestor || document.getElementById('whatsappGestor')?.value || '').toString();
+      raw = raw.replace(/\s+/g,'').replace(/\D/g,'');
+      if(!raw) return;
+      let numero = raw.startsWith('55') ? raw : ('55' + raw);
+      let mensagem = `🛒 *NOVA VENDA REALIZADA*\n\n`;
+      mensagem += `📅 Data: ${venda.data}\n\n`;
+      mensagem += `📦 *Itens vendidos:*\n`;
+      venda.itens.forEach(item => {
+        mensagem += `• ${item.nome} - ${item.qtd}x R$ ${item.preco.toFixed(2)}\n`;
+      });
+      mensagem += `\n💰 *Total: R$ ${venda.total.toFixed(2)}*`;
+      const encoded = encodeURIComponent(mensagem);
+      const webUrl = `https://wa.me/${numero}?text=${encoded}`;
+      window.open(webUrl, '_blank');
+    }
+
+    function mostrarAba(nome){
+      document.getElementById('telaVendas').style.display = nome==='vendas'?'':'none';
+      document.getElementById('telaEstoque').style.display = nome==='estoque'?'':'none';
+      document.getElementById('telaHistorico').style.display = nome==='historico'?'':'none';
+      if(nome==='vendas'){
+        renderProdutos();
+        renderCarrinho();
+      }
+      if(nome==='historico') renderHistorico();
+      if(nome==='estoque' && estoqueLogado) {
+        renderEstoque();
+        document.getElementById('whatsappGestor').value = whatsappGestor;
+      }
+    }
+
+    document.getElementById('whatsappGestor').addEventListener('change', (e)=>{
+      whatsappGestor = e.target.value.trim();
+      salvarTudo();
+    });
+
+    document.getElementById('abaVendas').addEventListener('click',()=>mostrarAba('vendas'));
+    document.getElementById('abaHistorico').addEventListener('click',()=>mostrarAba('historico'));
+    document.getElementById('abaEstoque').addEventListener('click',()=>{
+      if(!estoqueLogado){
+        new bootstrap.Modal(document.getElementById('modalSenha')).show();
+      } else {
+        mostrarAba('estoque');
+      }
+    });
+
+    document.getElementById('btnConfirmarSenha').addEventListener('click',()=>{
+      const v=document.getElementById('inputSenha').value.trim();
+      if(v===SENHA_GESTOR){
+        estoqueLogado=true;
+        bootstrap.Modal.getInstance(document.getElementById('modalSenha')).hide();
+        document.getElementById('painelEstoqueArea').style.display='';
+        document.getElementById('btnSairEstoque').classList.remove('d-none');
+        mostrarAba('estoque');
+        renderEstoque();
+      } else {
+        document.getElementById('senhaErro').style.display='block';
+      }
+    });
+
+    document.getElementById('btnSairEstoque').addEventListener('click',()=>{
+      estoqueLogado=false;
+      document.getElementById('painelEstoqueArea').style.display='none';
+      mostrarAba('vendas');
+    });
+
+    function renderProdutos(){
+      const g=document.getElementById('lista-produtos');
+      g.innerHTML='';
+      produtos.forEach((p,i)=>{
+        const img=p.imagemURL||'https://via.placeholder.com/300x150?text=Sem+Imagem';
+        g.innerHTML+=`<div class="col-12"><div class="card card-product shadow-sm p-2 mb-2"><div class="row align-items-center g-2"><div class="col-auto"><div class="img-side"><img src="${img}"></div></div><div class="col"><h6 class="mb-1">${p.nome}</h6><div class="small-muted">R$ <b>${p.preco.toFixed(2)}</b> • Estoque: <span class="badge bg-success">${p.quantidade}</span></div></div><div class="col-auto"><div class="quantidade-controle mb-2"><button class="btn-menos" onclick="diminuirQtd(${i})">−</button><input type="number" id="qtd-${i}" value="1" min="1"><button class="btn-mais" onclick="aumentarQtd(${i})">+</button></div><div><button class="btn-add" onclick="adicionarAoCarrinho(${i})"><i class="bi bi-cart-plus"></i> Adicionar</button></div></div></div></div></div>`;
+      });
+    }
+
+    function aumentarQtd(i){
+      const e=document.getElementById(`qtd-${i}`);
+      e.value=parseInt(e.value||0)+1;
+    }
+    
+    function diminuirQtd(i){
+      const e=document.getElementById(`qtd-${i}`);
+      const v=parseInt(e.value||0);
+      if(v>1)e.value=v-1;
+    }
+
+    function adicionarAoCarrinho(i){
+      const el=document.getElementById(`qtd-${i}`);
+      let qtd=parseInt(el.value)||1;
+      if(qtd<1)qtd=1;
+      const p=produtos[i];
+      if(p.quantidade<qtd){
+        mostrarModalSucesso('Ops!', 'Estoque insuficiente para este produto');
+        return;
+      }
+      p.quantidade-=qtd;
+      const it=carrinho.find(x=>x.nome===p.nome);
+      if(it)it.qtd+=qtd;else carrinho.push({nome:p.nome,preco:p.preco,qtd});
+      salvarTudo();
+      renderProdutos();
+      renderCarrinho();
+      mostrarModalSucesso('Adicionado!', `${qtd}x ${p.nome} adicionado ao carrinho`);
+    }
+
+    function renderCarrinho(){
+      const l=document.getElementById('lista-carrinho');
+      l.innerHTML='';
+      let t=0;
+      if(!carrinho.length){
+        l.innerHTML = '<li class="list-group-item text-muted">Carrinho vazio.</li>';
+      }
+      carrinho.forEach((it,idx)=>{
+        const st=it.preco*it.qtd;
+        t+=st;
+        l.innerHTML+=`<li class="list-group-item d-flex justify-content-between align-items-center"><div style="min-width:0;"><b>${it.nome}</b><div class="small-muted">${it.qtd}x R$ ${it.preco.toFixed(2)}</div></div><div class="d-flex align-items-center gap-2"><button class="btn-icon" onclick="abrirEditarCarrinho(${idx})" title="Editar quantidade" style="width:36px;height:36px;display:inline-flex;align-items:center;justify-content:center;border-radius:6px;border:none;background:#0d6efd;color:#fff;cursor:pointer;"><i class="bi bi-pencil"></i></button><button class="btn-icon" onclick="removerDoCarrinho(${idx})" title="Remover" style="width:36px;height:36px;display:inline-flex;align-items:center;justify-content:center;border-radius:6px;border:none;background:#dc3545;color:#fff;cursor:pointer;"><i class="bi bi-trash"></i></button><div class="fw-bold ms-2">R$ ${st.toFixed(2)}</div></div></li>`;
+      });
+      document.getElementById('totalVenda').textContent=t.toFixed(2);
+    }
+
+    function abrirEditarCarrinho(idx){
+      const item = carrinho[idx];
+      const produto = produtos.find(p=>p.nome === item.nome);
+      if(!item) return;
+      document.getElementById('editarCarrinhoIdx').value = idx;
+      document.getElementById('editarCarrinhoNome').textContent = item.nome;
+      document.getElementById('editarCarrinhoPreco').textContent = item.preco.toFixed(2);
+      document.getElementById('editarCarrinhoQuantidade').value = item.qtd;
+      if(produto){
+        const avisoEl = document.getElementById('avisoEstoque');
+        avisoEl.textContent = `Estoque disponível: ${produto.quantidade + item.qtd} unidade(s)`;
+      }
+      new bootstrap.Modal(document.getElementById('modalEditarCarrinho')).show();
+    }
+
+    function removerDoCarrinho(idx){
+      const item = carrinho[idx];
+      if(!item) return;
+      const produto = produtos.find(p=>p.nome === item.nome);
+      if(produto){
+        produto.quantidade += item.qtd;
+      }
+      carrinho.splice(idx,1);
+      salvarTudo();
+      renderProdutos();
+      renderCarrinho();
+      mostrarModalSucesso('Removido', `${item.nome} removido do carrinho`);
+    }
+
+    document.getElementById('btnFinalizar').addEventListener('click',()=>{
+      if(!carrinho.length){
+        mostrarModalSucesso('Ops!', 'Carrinho vazio!');
+        return;
+      }
+      const t=carrinho.reduce((s,i)=>s+i.preco*i.qtd,0);
+      const d=new Date().toLocaleString('pt-BR');
+      const venda = {data:d,itens:[...carrinho],total:t};
+      historico.push(venda);
+      carrinho=[];
+      salvarTudo();
+      renderProdutos();
+      renderCarrinho();
+      renderHistorico();
+      mostrarModalSucesso('Venda Concluída!', `Total: R$ ${t.toFixed(2)}`);
+      enviarWhatsApp(venda);
+    });
+
+    function renderHistorico(){
+      const a=document.getElementById('areaHistorico');
+      if(!historico.length){
+        a.innerHTML='<p class="text-muted">Nenhuma venda registrada ainda.</p>';
+        return;
+      }
+      a.innerHTML='';
+      historico.slice().reverse().forEach(v=>{
+        a.innerHTML+=`<div class="mb-3 border rounded p-3 bg-light"><div class="small-muted"><b>Data:</b> ${v.data}</div><ul>${v.itens.map(i=>`<li>${i.nome} — ${i.qtd} x R$ ${i.preco.toFixed(2)}</li>`).join('')}</ul><div class="fw-bold text-success">Total: R$ ${v.total.toFixed(2)}</div></div>`;
+      });
+    }
+
+    function abrirEditar(idx){
+      const p = produtos[idx];
+      document.getElementById('editarProdutoIdx').value = idx;
+      document.getElementById('editarNome').value = p.nome;
+      document.getElementById('editarQuantidade').value = p.quantidade;
+      document.getElementById('editarPreco').value = p.preco;
+      new bootstrap.Modal(document.getElementById('modalEditarProduto')).show();
+    }
+
+    function excluirProduto(idx){
+      if(confirm(`Deseja realmente excluir "${produtos[idx].nome}"?`)){
+        produtos.splice(idx, 1);
+        salvarTudo();
+        renderEstoque();
+        mostrarModalSucesso('Excluído!', 'Produto removido do estoque');
+      }
+    }
+
+    document.getElementById('btnSalvarCarrinho').addEventListener('click',()=>{
+      const idx = parseInt(document.getElementById('editarCarrinhoIdx').value);
+      const novaQtd = parseInt(document.getElementById('editarCarrinhoQuantidade').value) || 0;
+      if(novaQtd < 1){
+        mostrarModalSucesso('Erro', 'A quantidade deve ser pelo menos 1');
+        return;
+      }
+      const item = carrinho[idx];
+      const produto = produtos.find(p=>p.nome === item.nome);
+      if(!produto){
+        mostrarModalSucesso('Erro', 'Produto não encontrado no estoque');
+        return;
+      }
+      const delta = novaQtd - item.qtd;
+      if(delta > 0){
+        if(produto.quantidade < delta){
+          mostrarModalSucesso('Estoque insuficiente', `Só restam ${produto.quantidade} unidade(s) em estoque`);
+          return;
+        }
+        produto.quantidade -= delta;
+        item.qtd = novaQtd;
+      } else if(delta < 0){
+        produto.quantidade += (-delta);
+        item.qtd = novaQtd;
+      }
+      salvarTudo();
+      renderProdutos();
+      renderCarrinho();
+      bootstrap.Modal.getInstance(document.getElementById('modalEditarCarrinho')).hide();
+      mostrarModalSucesso('Atualizado!', `${item.nome}: ${novaQtd} unidade(s)`);
+    });
+
+    document.getElementById('btnSalvarEdicao').addEventListener('click',()=>{
+      const idx = parseInt(document.getElementById('editarProdutoIdx').value);
+      produtos[idx].nome = document.getElementById('editarNome').value.trim();
+      produtos[idx].quantidade = parseInt(document.getElementById('editarQuantidade').value);
+      produtos[idx].preco = parseFloat(document.getElementById('editarPreco').value);
+      salvarTudo();
+      renderEstoque();
+      bootstrap.Modal.getInstance(document.getElementById('modalEditarProduto')).hide();
+      mostrarModalSucesso('Atualizado!', 'Produto editado com sucesso');
+    });
+
+    function renderEstoque(){
+      const l=document.getElementById('listaEstoque');
+      l.innerHTML='';
+      if(produtos.length === 0){
+        l.innerHTML='<div class="col-12"><p class="text-muted text-center py-4">Nenhum produto cadastrado ainda.</p></div>';
+        return;
+      }
+      produtos.forEach((p, idx)=>{
+        const img = p.imagemURL || 'https://via.placeholder.com/150x80?text=Sem+Imagem';
+        l.innerHTML+=`<div class="col-md-6 col-12"><div class="card card-estoque shadow-sm p-3"><div class="d-flex gap-3 align-items-center flex-wrap"><div class="img-estoque"><img src="${img}" alt="${p.nome}"></div><div class="estoque-info"><h6>${p.nome}</h6><div class="estoque-preco">R$ <b>${p.preco.toFixed(2)}</b></div><div class="estoque-qtd">Estoque: <span class="badge bg-success">${p.quantidade}</span></div></div><div class="estoque-acoes ms-auto"><button class="btn-icon btn-edit" onclick="abrirEditar(${idx})" title="Editar"><i class="bi bi-pencil"></i></button><button class="btn-icon btn-delete" onclick="excluirProduto(${idx})" title="Excluir"><i class="bi bi-trash"></i></button></div></div></div></div>`;
+      });
+    }
+
+    document.getElementById('formNovoProduto').addEventListener('submit',(e)=>{
+      e.preventDefault();
+      const nome = document.getElementById('estoqueNome').value.trim();
+      const qtd = parseInt(document.getElementById('estoqueQuantidade').value);
+      const preco = parseFloat(document.getElementById('estoquePreco').value);
+      const imgFile = document.getElementById('estoqueImagem').files[0];
+      if(!nome || qtd<0 || preco<=0){
+        mostrarModalSucesso('Erro!', 'Preencha todos os campos corretamente');
+        return;
+      }
+      const novoProduto = {nome: nome, quantidade: qtd, preco: preco, imagemURL: ''};
+      if(imgFile){
+        const reader = new FileReader();
+        reader.onload = function(event){
+          novoProduto.imagemURL = event.target.result;
+          produtos.push(novoProduto);
+          salvarTudo();
+          renderEstoque();
+          e.target.reset();
+          mostrarModalSucesso('Produto Adicionado!', `${nome} cadastrado com sucesso`);
+        };
+        reader.readAsDataURL(imgFile);
+      } else {
+        produtos.push(novoProduto);
+        salvarTudo();
+        renderEstoque();
+        e.target.reset();
+        mostrarModalSucesso('Produto Adicionado!', `${nome} cadastrado com sucesso`);
+      }
+    });
+
+    renderProdutos();
+    renderCarrinho();
+    renderHistorico();
+    mostrarAba('vendas');
+  </script>
+</body>
+</html>
+</html>
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Chat com Bottom Nav</title>
+
+  <style>
+    :root{
+      --green: #3f1e00;
+      --nav-height-desktop: 56px;
+      --nav-height-mobile: 48px;
+      --text-color: #fff;
+      --bg-elev: rgba(0,0,0,0.12);
+    }
+
+    html, body {
+      height: 100%;
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      color: #222;
+      min-height: 100vh;
+      /* garante espaço inferior igual à nav para conteúdo não ficar escondido */
+      padding-bottom: calc(var(--nav-height-desktop) + env(safe-area-inset-bottom));
+      box-sizing: border-box;
+      background: #f5f6f8;
+    }
+
+    /* Ajusta o padding-bottom em telas pequenas para corresponder à nav reduzida */
+    @media (max-width: 480px) {
+      body { padding-bottom: calc(var(--nav-height-mobile) + env(safe-area-inset-bottom)); }
+    }
+
+    main.app {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 24px;
+      /* area do chat/conteúdo - mantenha vazio ou coloque seu conteúdo aqui */
+    }
+
+    /* NAV FIXA EM BAIXO */
+    .bottom-nav {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: var(--nav-height-desktop);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(180deg, var(--green), #3f1e00);
+      color: var(--text-color);
+      box-shadow: 0 -6px 18px rgba(0,0,0,0.12);
+      z-index: 9999;
+      padding-left: calc(12px + env(safe-area-inset-left));
+      padding-right: calc(12px + env(safe-area-inset-right));
+      box-sizing: border-box;
+    }
+
+    @media (max-width: 480px) {
+      .bottom-nav { height: var(--nav-height-mobile); }
+    }
+
+    .bottom-nav__inner {
+      width: 100%;
+      max-width: 980px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    /* Copyright visível no canto esquerdo */
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .copyright {
+      font-weight: 800;
+      font-size: 15px;
+      color: #fff;
+      background: rgba(0,0,0,0.18);
+      padding: 6px 10px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+      user-select: text;
+    }
+
+    /* Título central — agora o nome BARBEARIA LORD fica centralizado */
+    .nav-center {
+      font-weight: 800;
+      font-size: 16px;
+      opacity: 0.98;
+      text-align: center;
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* espaço à direita para balancear (vazio) */
+    .nav-right {
+      width: 90px; /* mantém espaço para balancear o layout; ajustável */
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+    }
+
+    /* Em telas muito pequenas, reduz o texto para caber */
+    @media (max-width: 360px) {
+      .copyright { font-size: 13px; padding: 5px 8px; border-radius: 6px; }
+      .nav-center { font-size: 14px; }
+      .nav-right { width: 64px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <!-- Conteúdo do chat ou da página: mantenha aqui o que precisa aparecer acima da barra fixa -->
+  </main>
+
+  <!-- Barra fixa em baixo -->
+  <nav class="bottom-nav" role="navigation" aria-label="Barra inferior">
+    <div class="bottom-nav__inner">
+      <div class="nav-left">
+        <div id="copyright" class="copyright" aria-hidden="false">© CRIADO POR JULIANO</div>
+      </div>
+
+      <div class="nav-center" aria-hidden="false">BARBEARIA LORD</div>
+
+      <div class="nav-right" aria-hidden="true"><!-- espaço intencionalmente vazio para balancear --> </div>
+    </div>
+  </nav>
+</body>
+</html>
